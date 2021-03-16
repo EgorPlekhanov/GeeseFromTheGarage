@@ -1,40 +1,45 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Diagnostics;
-using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace debet_kredit_xls
 {
     public partial class Form1 : Form
     {
-        DataSet ds = new DataSet();
-        DataTable dt = new DataTable();
+        /// <summary>
+        /// Таблица с данными
+        /// </summary>
+        DataTable dataTable = new DataTable();
         
+        /// <summary>
+        /// Конструктор формы
+        /// </summary>
         public Form1()
         {
             InitializeComponent();
-            dt.Columns.Add("Статус клиента", Type.GetType("System.String"));
-            dt.Columns.Add("№ договора", Type.GetType("System.String"));
-            dt.Columns.Add("Баланс", Type.GetType("System.Double"));
-
+            dataTable.Columns.Add("Статус клиента", Type.GetType("System.String"));
+            dataTable.Columns.Add("№ договора", Type.GetType("System.String"));
+            dataTable.Columns.Add("Баланс", Type.GetType("System.Double"));
+            
         }
 
-        private void добавитьДанныеИзExcelToolStripMenuItem_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Обработчик события клика по кнопке "Добавить файл..."
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void addDataFromExcelToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            OpenFileDialog o = new OpenFileDialog();
-            o.Filter = "excel files (*.xls)|*.xls|All files (*.*)|*.*";
-            o.RestoreDirectory = true;
-            string file = string.Empty;
-            if (o.ShowDialog() == DialogResult.OK)
+            OpenFileDialog fileDialog = new OpenFileDialog();
+            fileDialog.Filter = "excel files (*.xls)|*.xls|All files (*.*)|*.*";
+            fileDialog.RestoreDirectory = true;
+            fileDialog.InitialDirectory = AppContext.BaseDirectory;
+            if (fileDialog.ShowDialog() == DialogResult.OK)
             {
-                file = o.FileName;
+                string file = fileDialog.FileName;
                 if (File.Exists(file))
                 {
                     LoadDataFromFile(file);
@@ -42,69 +47,104 @@ namespace debet_kredit_xls
             }
         }
 
+        /// <summary>
+        /// Метод для старта воркера для считывания данных в фоновом режиме
+        /// </summary>
+        /// <param name="file"></param>
         private void LoadDataFromFile(string file)
         {
             if (!backgroundWorker1.IsBusy)
             {
                 backgroundWorker1.RunWorkerAsync(file);
-            }
-
-            
+            }            
         }
 
-
-        private void очитьДанныеToolStripMenuItem_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Обработчик события клика по кнопке "Очистить данные"
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void clearDataToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            dt.Rows.Clear();
-            dataGridView1.Rows.Clear();
+            if (dataTable.Rows.Count > 0)
+                dataTable.Rows.Clear();
         }
 
-        private void сохранитьОтсортированныеДанныеToolStripMenuItem_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Обработчик события на клик по кнопке "Сохранить данные"
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void saveDataToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SaveFileDialog s = new SaveFileDialog();
-            s.Filter = "csv files (*.csv)|*.csv|All files (*.*)|*.*";
-            s.RestoreDirectory = true;
-            string file = string.Empty;
-            if (s.ShowDialog() == DialogResult.OK)
+            SaveFileDialog saveDialog = new SaveFileDialog();
+            saveDialog.Filter = "csv files (*.csv)|*.csv|All files (*.*)|*.*";
+            saveDialog.RestoreDirectory = true;
+            saveDialog.InitialDirectory = AppContext.BaseDirectory;
+            if (saveDialog.ShowDialog() == DialogResult.OK)
             {
-                SaveDataToFile(s.FileName);
+                SaveDataToFile(saveDialog.FileName);
                 MessageBox.Show("Данные сохранены");
             }
         }
 
-        private void SaveDataToFile(string file)
+        /// <summary>
+        /// Метод заполняет транспортный файл и сохраняет его в локальную директорию
+        /// </summary>
+        /// <param name="filePath"></param>
+        private void SaveDataToFile(string filePath)
         {
-            string scv_data = string.Empty;
-            //for (int f = 0; f < dataGridView1.ColumnCount; f++)
-            //{
-            //    scv_data += (dataGridView1.Columns[f].HeaderText + ";");
-
-            //}
-            //scv_data += "\t\n";
+            string csvData = string.Empty;
+            string currentDate = DateTime.Now.ToString("dd-MM-yyyy");
             for (int i = 0; i < dataGridView1.RowCount - 1; i++)
             {
                 int flag = 0;
-                if (dataGridView1.Rows[i].Cells[0].Value.ToString() == "Информирование")
+                string status = dataGridView1.Rows[i].Cells[0].Value.ToString();
+                string documentNumber = dataGridView1.Rows[i].Cells[1].Value.ToString();
+                string balance = dataGridView1.Rows[i].Cells[2].Value.ToString();
+                switch (status)
                 {
-                    flag = 1;
+                    case "Информирование":
+                        flag = 1;
+                        break;
+                    case "Предупреждение":
+                        flag = 2;
+                        break;
+                    case "Ограничение функций":
+                        flag = 3;
+                        break;
                 }
-               scv_data += string.Format("{0};{0};{1};1000;{2};{3}",dataGridView1.Rows[i].Cells[1].Value.ToString(), dataGridView1.Rows[i].Cells[2].Value.ToString(), DateTime.Now.ToString("dd-MM-yyyy"),flag);
-               scv_data += "\t\n";
+
+                //Формат транспортного файла 1;2;3;4;5;6, где
+                // 1 - Номер объекта
+                // 2 - Номер договора
+                // 3 - Баланс
+                // 4 - Абонентская плата
+                // 5 - Дата списания
+                // 6 - Уровень информирования
+
+                csvData += $"{documentNumber};{documentNumber};{balance};;{currentDate};{flag}";
+                csvData += "\t\n";
             }
-            StreamWriter wr = new StreamWriter(file, false, Encoding.GetEncoding("windows-1251"));
-            wr.Write(scv_data);
+            StreamWriter wr = new StreamWriter(filePath, false, Encoding.GetEncoding("windows-1251"));
+            wr.Write(csvData);
             wr.Close();
         }
 
+        /// <summary>
+        /// Метод считывает данные из Excel-файла
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
-            string file = (string)e.Argument;
+            string fileName = (string)e.Argument;
             try
             {
                 Microsoft.Office.Interop.Excel.Application xlApp = new Microsoft.Office.Interop.Excel.Application(); //Excel
                 Microsoft.Office.Interop.Excel.Workbook xlWB; //рабочая книга              
                 Microsoft.Office.Interop.Excel.Worksheet xlSht; //лист Excel   
-                xlWB = xlApp.Workbooks.Open(file); //название файла Excel                                             
+                xlWB = xlApp.Workbooks.Open(fileName); //название файла Excel                                             
                 xlSht = xlWB.Worksheets["Sheet1"]; //название листа или 1-й лист в книге xlSht = xlWB.Worksheets[1];
                 int iLastRow = xlSht.Cells[xlSht.Rows.Count, "A"].End[Microsoft.Office.Interop.Excel.XlDirection.xlUp].Row;  //последняя заполненная строка в столбце А            
                 var arrData = (object[,])xlSht.Range["A3:G" + iLastRow].Value; //берём данные с листа Excel
@@ -114,122 +154,131 @@ namespace debet_kredit_xls
 
                 e.Result = arrData;
             }
-            catch (SystemException ex)
+            catch (Exception ex)
             {
                 e.Result = null;
             }
         }
 
+        /// <summary>
+        /// Обработчик события об окончании считывания Excel-файла
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            if (e.Error == null && e.Result != null)
+            if (e.Error != null || e.Result == null)
+                return;
+
+            var arrData = (object[,])e.Result;
+            dataTable.Rows.Clear();
+            int RowsCount = arrData.GetUpperBound(0);
+
+            //заполняем DataGridView данными из массива
+            for (int i = 1; i <= RowsCount; i++)
             {
-                var arrData = (object[,])e.Result;
-                dt.Rows.Clear();
-                int RowsCount = arrData.GetUpperBound(0);
-                int ColumnsCount = arrData.GetUpperBound(1);
-                //заполняем DataGridView данными из массива
-                for (int i = 1; i <= RowsCount; i++)
+                DataRow dataRow = dataTable.NewRow();
+                dataRow[1] = arrData[i, 1];
+                double balance = 0;
+                if (arrData[i, 6] != null) //Дебет на конец периода
                 {
-                    DataRow dr = dt.NewRow();
-                    dr[1] = arrData[i, 1];
-                    double balans = 0;
-                    if (arrData[i, 6] != null)
+                    try
                     {
-                        try
-                        {
-                            balans = Convert.ToDouble(arrData[i, 6]);
-
-                        }
-                        catch (SystemException ex)
-                        {
-                            dr[2] = -1;
-                            dr[0] = "ошибка исходных данных";
-                            dt.Rows.Add(dr);
-                            continue;
-                        }
+                        balance = Convert.ToDouble(arrData[i, 6]);
                     }
-                    else if (arrData[i, 7] != null)
+                    catch
                     {
-                        try
-                        {
-                            balans = -Convert.ToDouble(arrData[i, 7]);
-                        }
-                        catch (SystemException ex)
-                        {
-                            balans = -1;
-                            dr[0] = "ошибка исходных данных";
-                            dt.Rows.Add(dr);
-                            continue;
-                        }
+                        dataRow[2] = -1;
+                        dataRow[0] = "Ошибка исходных данных";
+                        dataTable.Rows.Add(dataRow);
+                        continue;
                     }
-
-                    dr[2] = balans;
-
-                    if (balans < 0)
+                }
+                else if (arrData[i, 7] != null) //Кредит на конец периода
+                {
+                    try
                     {
-                        dr[0] = "Информирование";
+                        balance = -Convert.ToDouble(arrData[i, 7]);
                     }
-                    else
+                    catch
                     {
-                        dr[0] = "Нет задолженности";
+                        balance = -1;
+                        dataRow[0] = "Ошибка исходных данных";
+                        dataTable.Rows.Add(dataRow);
+                        continue;
                     }
-
-                    dt.Rows.Add(dr);
-
-
                 }
 
-                dataGridView1.DataSource = dt;
-                FilterData();
+                dataRow[2] = balance;
+
+                if (balance < 0)
+                {
+                    dataRow[0] = "Информирование";
+                    if (balance < -8000)
+                        dataRow[0] = "Предупреждение";
+                    if (balance < -15000)
+                        dataRow[0] = "Ограничение функций";
+                }
+                else
+                {
+                    dataRow[0] = "Нет задолженности";
+                }
+
+                dataTable.Rows.Add(dataRow);
             }
+
+            dataGridView1.DataSource = dataTable;
+            //Расширяем колонку
+            dataGridView1.Columns[0].Width = 150;
+            FilterData();
         }
 
+        /// <summary>
+        /// Обработчик события при смене фильтра
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             FilterData();
-
         }
 
+        /// <summary>
+        /// Метод для фильтрации данных в таблице
+        /// </summary>
         private void FilterData()
         {
-            if (comboBox1.Text == "Все")
+            string status = "";
+            switch (comboBox1.Text)
             {
-                dataGridView1.DataSource = dt;
+                case "Должники - информирование":
+                    status = "Информирование";
+                    break;
+                case "Должники - предупреждение":
+                    status = "Предупреждение";
+                    break;
+                case "Должники - ограничение":
+                    status = "Ограничение функций";
+                    break;
+                case "Без долга":
+                    status = "Нет задолженности";
+                    break;
+                default:
+                    dataGridView1.DataSource = dataTable;
+                    return;
             }
-            else if (comboBox1.Text == "Должники")
+            DataTable dataTableCopy = dataTable.Copy();
+            for (int i = 0; i < dataTableCopy.Rows.Count; i++)
             {
-                DataTable dt1 = dt.Copy();
-                for (int i = 0; i < dt1.Rows.Count; i++)
+                if (dataTableCopy.Rows[i]["Статус клиента"].ToString() != status)
                 {
-                    if (dt1.Rows[i]["Статус клиента"].ToString() != "Информирование")
-                    {
-                        dt1.Rows.RemoveAt(i);
-                        i--;
-                        continue;
-                    }
+                    dataTableCopy.Rows.RemoveAt(i);
+                    i--;
+                    continue;
                 }
-
-                dataGridView1.DataSource = dt1;
-                //DataRow[] rows = dt.Select("[Статус клиента] = 'Информирование'");
-
             }
-            else if (comboBox1.Text == "Без долга")
-            {
-                //DataRow[] rows = dt.Select("[Статус клиента] = 'Нет задолженности'");
-                DataTable dt1 = dt.Copy();
-                for (int i = 0; i < dt1.Rows.Count; i++)
-                {
-                    if (dt1.Rows[i]["Статус клиента"].ToString() != "Нет задолженности")
-                    {
-                        dt1.Rows.RemoveAt(i);
-                        i--;
-                        continue;
-                    }
-                }
 
-                dataGridView1.DataSource = dt1;
-            }
+            dataGridView1.DataSource = dataTableCopy;
         }
     }
 }

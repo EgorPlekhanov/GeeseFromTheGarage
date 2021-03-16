@@ -31,9 +31,9 @@
             this.components = new System.ComponentModel.Container();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.добавитьДанныеИзExcelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.очитьДанныеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.сохранитьОтсортированныеДанныеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.addDataFromExcelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.clearDataToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveDataToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -56,32 +56,32 @@
             // contextMenuStrip1
             // 
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.добавитьДанныеИзExcelToolStripMenuItem,
-            this.очитьДанныеToolStripMenuItem,
-            this.сохранитьОтсортированныеДанныеToolStripMenuItem});
+            this.addDataFromExcelToolStripMenuItem,
+            this.clearDataToolStripMenuItem,
+            this.saveDataToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(290, 70);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(291, 70);
             // 
-            // добавитьДанныеИзExcelToolStripMenuItem
+            // addDataFromExcelToolStripMenuItem
             // 
-            this.добавитьДанныеИзExcelToolStripMenuItem.Name = "добавитьДанныеИзExcelToolStripMenuItem";
-            this.добавитьДанныеИзExcelToolStripMenuItem.Size = new System.Drawing.Size(289, 22);
-            this.добавитьДанныеИзExcelToolStripMenuItem.Text = "Добавить данные из excel...";
-            this.добавитьДанныеИзExcelToolStripMenuItem.Click += new System.EventHandler(this.добавитьДанныеИзExcelToolStripMenuItem_Click);
+            this.addDataFromExcelToolStripMenuItem.Name = "addDataFromExcelToolStripMenuItem";
+            this.addDataFromExcelToolStripMenuItem.Size = new System.Drawing.Size(290, 22);
+            this.addDataFromExcelToolStripMenuItem.Text = "Добавить данные из Excel...";
+            this.addDataFromExcelToolStripMenuItem.Click += new System.EventHandler(this.addDataFromExcelToolStripMenuItem_Click);
             // 
-            // очитьДанныеToolStripMenuItem
+            // clearDataToolStripMenuItem
             // 
-            this.очитьДанныеToolStripMenuItem.Name = "очитьДанныеToolStripMenuItem";
-            this.очитьДанныеToolStripMenuItem.Size = new System.Drawing.Size(289, 22);
-            this.очитьДанныеToolStripMenuItem.Text = "Очить данные";
-            this.очитьДанныеToolStripMenuItem.Click += new System.EventHandler(this.очитьДанныеToolStripMenuItem_Click);
+            this.clearDataToolStripMenuItem.Name = "clearDataToolStripMenuItem";
+            this.clearDataToolStripMenuItem.Size = new System.Drawing.Size(290, 22);
+            this.clearDataToolStripMenuItem.Text = "Очистить данные";
+            this.clearDataToolStripMenuItem.Click += new System.EventHandler(this.clearDataToolStripMenuItem_Click);
             // 
-            // сохранитьОтсортированныеДанныеToolStripMenuItem
+            // saveDataToolStripMenuItem
             // 
-            this.сохранитьОтсортированныеДанныеToolStripMenuItem.Name = "сохранитьОтсортированныеДанныеToolStripMenuItem";
-            this.сохранитьОтсортированныеДанныеToolStripMenuItem.Size = new System.Drawing.Size(289, 22);
-            this.сохранитьОтсортированныеДанныеToolStripMenuItem.Text = "Сохранить отфильтрованные данные...";
-            this.сохранитьОтсортированныеДанныеToolStripMenuItem.Click += new System.EventHandler(this.сохранитьОтсортированныеДанныеToolStripMenuItem_Click);
+            this.saveDataToolStripMenuItem.Name = "saveDataToolStripMenuItem";
+            this.saveDataToolStripMenuItem.Size = new System.Drawing.Size(290, 22);
+            this.saveDataToolStripMenuItem.Text = "Сохранить отфильтрованные данные...";
+            this.saveDataToolStripMenuItem.Click += new System.EventHandler(this.saveDataToolStripMenuItem_Click);
             // 
             // backgroundWorker1
             // 
@@ -93,11 +93,13 @@
             this.comboBox1.FormattingEnabled = true;
             this.comboBox1.Items.AddRange(new object[] {
             "Все",
-            "Должники",
+            "Должники - информирование",
+            "Должники - предупреждение",
+            "Должники - ограничение",
             "Без долга"});
             this.comboBox1.Location = new System.Drawing.Point(68, 20);
             this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(121, 21);
+            this.comboBox1.Size = new System.Drawing.Size(260, 21);
             this.comboBox1.TabIndex = 1;
             this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
             // 
@@ -119,7 +121,7 @@
             this.Controls.Add(this.comboBox1);
             this.Controls.Add(this.dataGridView1);
             this.Name = "Form1";
-            this.Text = "Дебет_Кредит v.10";
+            this.Text = "Интеграционная шина для ЧОП \"Гуси из гаража\"";
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.contextMenuStrip1.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -131,9 +133,9 @@
 
         private System.Windows.Forms.DataGridView dataGridView1;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
-        private System.Windows.Forms.ToolStripMenuItem добавитьДанныеИзExcelToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem очитьДанныеToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem сохранитьОтсортированныеДанныеToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem addDataFromExcelToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem clearDataToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveDataToolStripMenuItem;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.Label label1;
